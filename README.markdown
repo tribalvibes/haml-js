@@ -298,6 +298,43 @@ By default, Haml(src) returns a completely self-sufficient function, including a
 
 Then, the output template function definition will call `MyApp.esc(string)` and will omit the `html_escape` function definition. Haml.html_escape exposes the default escape function.  If you are going to render your templates in the same context where you compile them (for instance, if you are only rendering them on the server side,) it might make sense to use  `Haml(src, {customEscaper: "Haml.html_escape"})`
 
+##Client-side templates
+
+For client-side use, make a simple jQuery wrapper like so:
+```javascript
+// View base convenience method:
+View.extend({
+	tmpl: function( sel, ctx, locals ) {
+		tel = $(sel);
+		if (!(tmpl = tel.data('tmpl') )) {
+			try {
+				tmpl = Haml(tel.text());
+				tel.data('tmpl', tmpl);
+			}
+			catch(e) {
+				console.log("\nHaml exception" );
+			}
+		}
+		return tmpl.call(ctx, locals);
+	}
+});
+
+// usage in View instance:
+  $(this.el).html( this.tmpl( "#sample-template", this.model, { local: vals } ) );
+```
+
+Template declaration:
+```html
+  <script id="sample-template" type="text/x-haml">
+  - var name = this.get('name')
+  %section.sample
+    %p.name= name
+    %p.value= local
+  </script>
+```
+
+The `ctx` parameter is bound to `this` within the template, and the `locals` hash is injected into its scope. Note it's fussy about the indentation within the `<script>` block.
+
 ## Get Involved
 
 If you want to use this project and something is missing then send me a message.  I'm very busy and have several open source projects I manage.  I'll contribute to this project as I have time, but if there is more interest for some particular aspect, I'll work on it a lot faster.  Also you're welcome to fork this project and send me patches/pull-requests.
